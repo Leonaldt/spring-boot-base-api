@@ -30,7 +30,8 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
             "/swagger-ui.html",
             "/webjars/**",
             "/socket/**",
-            "/actuator/**"
+            "/actuator/**",
+            "/h2-console/**"
     };
 
     @Override
@@ -44,11 +45,11 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers(SWAGGER_UI).permitAll()
-                .antMatchers("/h2-console").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().csrf().disable();
+        http.headers().frameOptions().disable();;
     }
 
     @Bean
