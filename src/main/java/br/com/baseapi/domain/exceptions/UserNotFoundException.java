@@ -1,6 +1,8 @@
 package br.com.baseapi.domain.exceptions;
 
-public class UserNotFoundException extends RuntimeException {
+import javax.persistence.EntityNotFoundException;
+
+public class UserNotFoundException extends EntityNotFoundException {
     private static final long serialVersionUID = 1L;
 
     public UserNotFoundException() {
