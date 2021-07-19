@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,9 +29,17 @@ public class UserController {
     private UserModelAssembler userModelAssembler;
 
     @PostMapping
+    @Transactional
     @ApiOperation("Create a new user")
-    public UserModel create(@RequestBody @Valid UserInput userInput){
-        return this.userService.create(userInput);
+    public UserModel create(@RequestBody @Valid UserInput input){
+        return this.userService.create(input);
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    @ApiOperation("Update a user by id")
+    public ResponseEntity<UserModel> update(@RequestBody @Valid UserInput input, @PathVariable Long id) {
+        return ResponseEntity.ok(this.userService.update(input, id));
     }
 
     @GetMapping
@@ -53,11 +62,12 @@ public class UserController {
             @RequestParam(value = "orderBy", defaultValue = "id") String orderBy,
             @RequestParam(value = "direction", defaultValue = "DESC") String direction,
             @RequestParam(value = "name", required = false) String parameter
-    ){
+    ) {
         return this.userService.page(page, linesPerPage, orderBy, direction, parameter);
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     @ApiOperation("Delete a user by id")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         this.userService.delete(id);

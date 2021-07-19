@@ -49,6 +49,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserModel update(UserInput input, Long id) {
+        User user = this.findById(id);
+        user.setName(input.getName());
+        user.setEmail(input.getEmail());
+
+        this.userRepository.save(user);
+
+        return this.userModelAssembler.toModel(user);
+    }
+
+    @Override
     public List<UserModel> findAll() {
         return this.userModelAssembler.toCollectionModel(this.userRepository.findAll());
     }

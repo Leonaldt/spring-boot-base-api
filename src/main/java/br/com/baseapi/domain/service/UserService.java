@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    UserModel create(UserInput userInput);
+    UserModel create(UserInput input);
+    UserModel update(UserInput input, Long id);
     List<UserModel> findAll();
     User findById(Long id);
     Optional<User> findByEmail(String email);
