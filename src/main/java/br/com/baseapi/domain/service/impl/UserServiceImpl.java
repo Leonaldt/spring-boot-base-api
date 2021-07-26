@@ -8,13 +8,17 @@ import br.com.baseapi.core.mail.Mailer;
 import br.com.baseapi.domain.exceptions.UserNotFoundException;
 import br.com.baseapi.domain.model.User;
 import br.com.baseapi.domain.repository.UserRepository;
+import br.com.baseapi.domain.service.FileStorageService;
 import br.com.baseapi.domain.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,12 +40,48 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserInputDisassembler userInputDisassembler;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    @Value("${file.upload-dir}")
+    private String fileUploadDir;
+
     @Override
     public UserModel create(UserInput input) {
         String passwordEncoded = new BCryptPasswordEncoder().encode(input.getPassword());
 
         User user = this.userInputDisassembler.toDomainObject(input);
         user.setPassword(passwordEncoded);
+
+        this.userRepository.save(user);
+
+        return this.userModelAssembler.toModel(user);
+    }
+
+    @Override
+    public UserModel createUserWithImage(UserInput input, MultipartFile image) throws IOException {
+        String passwordEncoded = new BCryptPasswordEncoder().encode(input.getPassword());
+
+        User user = this.userInputDisassembler.toDomainObject(input);
+        String imageName = this.fileStorageService.storeFile(image, "user");
+        if (image != null) user.setImage(imageName);
+        user.setPassword(passwordEncoded);
+
+        this.userRepository.save(user);
+
+        return this.userModelAssembler.toModel(user);
+    }
+
+    @Override
+    public UserModel updateUserWithImage(UserInput input, Long id, MultipartFile image) throws IOException {
+        User user = this.findById(id);
+        user.setName(input.getName());
+        user.setEmail(input.getEmail());
+        if (image != null) {
+            File file = new File(this.fileUploadDir + user.getImage());
+            if (file.exists()) this.fileStorageService.deleteFile(user.getImage());
+            user.setImage(this.fileStorageService.storeFile(image, "user"));
+        }
 
         this.userRepository.save(user);
 
@@ -105,4 +145,5 @@ public class UserServiceImpl implements UserService {
         return "Olá, " + user.getName() + "." + doubleBrokenLine +
                 "Clique no link para redefinir sua senha";
     }
+
 }

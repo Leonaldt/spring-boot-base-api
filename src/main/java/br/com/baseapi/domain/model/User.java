@@ -24,6 +24,9 @@ public class User {
     private String email;
     private String password;
 
+    @Lob
+    private String image;
+
 //    @ManyToMany(fetch = FetchType.EAGER)
 //    private List<Profile> profiles = new ArrayList<>();
 }
